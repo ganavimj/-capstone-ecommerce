@@ -1,0 +1,26 @@
+# Render blueprint for the backend API.
+# Set MONGO_URI and JWT_SECRET in the Render dashboard (marked sync: false below).
+services:
+  - type: web
+    name: capstone-ecommerce-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: ADMIN_NAME
+        value: Site Admin
+      - key: ADMIN_EMAIL
+        value: admin@demo.com
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
+      - key: CLIENT_ORIGIN
+        sync: false
