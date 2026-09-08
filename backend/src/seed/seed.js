@@ -4,73 +4,7 @@ const connectDB = require('../config/db');
 const User = require('../models/User');
 const Product = require('../models/Product');
 const Order = require('../models/Order');
-
-const SAMPLE_PRODUCTS = [
-  {
-    name: 'Wireless Headphones',
-    description: 'Over-ear Bluetooth headphones with 30h battery life.',
-    price: 89.99,
-    category: 'Electronics',
-    stock: 25,
-    imageUrl: 'https://images.unsplash.com/photo-1518444065439-e933c06ce9cd?w=600',
-  },
-  {
-    name: 'Mechanical Keyboard',
-    description: 'Compact 75% hot-swappable mechanical keyboard.',
-    price: 119.0,
-    category: 'Electronics',
-    stock: 15,
-    imageUrl: 'https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600',
-  },
-  {
-    name: 'USB-C Hub',
-    description: '7-in-1 USB-C hub with HDMI, SD and 100W passthrough.',
-    price: 39.5,
-    category: 'Electronics',
-    stock: 40,
-    imageUrl: 'https://images.unsplash.com/photo-1625842268584-8f3296236761?w=600',
-  },
-  {
-    name: 'The Pragmatic Programmer',
-    description: 'Classic software craftsmanship book, 20th anniversary edition.',
-    price: 42.0,
-    category: 'Books',
-    stock: 30,
-    imageUrl: 'https://images.unsplash.com/photo-1512820790803-83ca734da794?w=600',
-  },
-  {
-    name: 'Clean Code',
-    description: 'A handbook of agile software craftsmanship by Robert C. Martin.',
-    price: 38.0,
-    category: 'Books',
-    stock: 22,
-    imageUrl: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=600',
-  },
-  {
-    name: 'Stainless Water Bottle',
-    description: 'Insulated 750ml bottle, keeps drinks cold for 24h.',
-    price: 24.99,
-    category: 'Home',
-    stock: 50,
-    imageUrl: 'https://images.unsplash.com/photo-1602143407151-7111542de6e8?w=600',
-  },
-  {
-    name: 'Ceramic Mug Set',
-    description: 'Set of 4 minimalist 350ml ceramic mugs.',
-    price: 29.0,
-    category: 'Home',
-    stock: 18,
-    imageUrl: 'https://images.unsplash.com/photo-1514228742587-6b1558fcca3d?w=600',
-  },
-  {
-    name: 'Desk Lamp',
-    description: 'LED desk lamp with adjustable color temperature and dimming.',
-    price: 45.0,
-    category: 'Home',
-    stock: 12,
-    imageUrl: 'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=600',
-  },
-];
+const SAMPLE_PRODUCTS = require('./sample-products');
 
 async function run() {
   await connectDB(process.env.MONGO_URI);

@@ -7,6 +7,7 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "dev:mem": "node src/seed/dev-server.js",
     "seed": "node src/seed/seed.js",
     "smoke": "node src/seed/smoke.js"
   },
