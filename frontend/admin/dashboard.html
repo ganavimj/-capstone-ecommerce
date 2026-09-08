@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Capstone Store</title>
+  <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+  <main class="container">
+    <h1>Admin Dashboard</h1>
+    <p class="subtitle">Manage products and order fulfillment.</p>
+
+    <div class="toolbar">
+      <button class="tab-btn btn" data-target="tab-products">Products</button>
+      <button class="tab-btn btn-secondary" data-target="tab-orders">Orders</button>
+    </div>
+
+    <!-- Products -->
+    <section id="tab-products" class="tab-panel stack">
+      <div class="panel">
+        <h2 id="product-form-title">New product</h2>
+        <form id="product-form">
+          <input type="hidden" name="productId">
+          <div class="field">
+            <label for="p-name">Name</label>
+            <input id="p-name" name="name" required>
+          </div>
+          <div class="toolbar" style="margin:0">
+            <div class="field" style="flex:1">
+              <label for="p-category">Category</label>
+              <input id="p-category" name="category" required>
+            </div>
+            <div class="field" style="flex:1">
+              <label for="p-price">Price</label>
+              <input id="p-price" name="price" type="number" step="0.01" min="0" required>
+            </div>
+            <div class="field" style="flex:1">
+              <label for="p-stock">Stock</label>
+              <input id="p-stock" name="stock" type="number" min="0" required>
+            </div>
+          </div>
+          <div class="field">
+            <label for="p-image">Image URL</label>
+            <input id="p-image" name="imageUrl" type="url" placeholder="https://…">
+          </div>
+          <div class="field">
+            <label for="p-desc">Description</label>
+            <textarea id="p-desc" name="description" rows="3"></textarea>
+          </div>
+          <button type="submit" class="btn">Save product</button>
+          <button type="button" id="product-reset" class="btn btn-secondary" hidden>Cancel edit</button>
+        </form>
+      </div>
+
+      <div class="panel">
+        <h2>All products</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Name</th><th>Category</th><th>Price</th><th>Stock</th><th>Actions</th></tr></thead>
+            <tbody id="product-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Orders -->
+    <section id="tab-orders" class="tab-panel" hidden>
+      <div class="panel">
+        <h2>All orders</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>ID</th><th>Customer</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody id="order-rows"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="../js/config.js"></script>
+  <script src="../js/util.js"></script>
+  <script src="../js/api.js"></script>
+  <script src="../js/cart.js"></script>
+  <script src="../js/auth.js"></script>
+  <script src="../js/admin.js"></script>
+</body>
+</html>

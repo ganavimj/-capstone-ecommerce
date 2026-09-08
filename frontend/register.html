@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Register — Capstone Store</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <header id="site-nav"></header>
+  <main class="container">
+    <div class="panel auth-card">
+      <h1>Create account</h1>
+      <p class="subtitle">You'll be logged in automatically.</p>
+      <form id="auth-form">
+        <div class="field">
+          <label for="name">Name</label>
+          <input type="text" id="name" name="name" required autocomplete="name">
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input type="email" id="email" name="email" required autocomplete="email">
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" required minlength="6" autocomplete="new-password">
+        </div>
+        <button type="submit" class="btn" style="width:100%">Register</button>
+        <p id="form-error" class="error-text"></p>
+      </form>
+      <p class="muted">Already have an account? <a href="login.html">Log in</a></p>
+    </div>
+  </main>
+
+  <script src="js/config.js"></script>
+  <script src="js/util.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/login.js"></script>
+</body>
+</html>
