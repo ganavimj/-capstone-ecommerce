@@ -1,13 +1,12 @@
 {
   "name": "capstone-ecommerce-backend",
   "version": "1.0.0",
-  "description": "Express + MongoDB API for the capstone e-commerce store",
+  "description": "Express + PostgreSQL API for the capstone e-commerce store",
   "main": "src/server.js",
   "type": "commonjs",
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "dev:mem": "node src/seed/dev-server.js",
     "seed": "node src/seed/seed.js",
     "smoke": "node src/seed/smoke.js"
   },
@@ -17,11 +16,10 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.5.1",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "pg": "^8.23.0"
   },
   "devDependencies": {
-    "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.4",
     "supertest": "^7.2.2"
   }
