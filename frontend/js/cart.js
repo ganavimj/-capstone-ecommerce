@@ -21,12 +21,14 @@ const Cart = {
   },
   add(product, quantity = 1) {
     const items = this.items();
-    const found = items.find((i) => i.id === product._id);
+    // Store id as a string so it always matches DOM dataset values.
+    const pid = String(product._id);
+    const found = items.find((i) => i.id === pid);
     if (found) {
       found.quantity += quantity;
     } else {
       items.push({
-        id: product._id,
+        id: pid,
         name: product.name,
         price: product.price,
         imageUrl: product.imageUrl,
@@ -35,7 +37,8 @@ const Cart = {
     }
     this.save(items);
   },
-  setQuantity(id, quantity) {
+  setQuantity(rawId, quantity) {
+    const id = String(rawId);
     let items = this.items();
     if (quantity <= 0) {
       items = items.filter((i) => i.id !== id);
@@ -45,7 +48,8 @@ const Cart = {
     }
     this.save(items);
   },
-  remove(id) {
+  remove(rawId) {
+    const id = String(rawId);
     this.save(this.items().filter((i) => i.id !== id));
   },
   clear() {

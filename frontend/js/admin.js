@@ -66,7 +66,7 @@ productTable.addEventListener('click', async (e) => {
   const row = e.target.closest('tr');
   if (!row) return;
   const id = row.dataset.id;
-  const product = (productTable._data || []).find((p) => p._id === id);
+  const product = (productTable._data || []).find((p) => String(p._id) === id);
 
   if (e.target.classList.contains('edit')) {
     fillForm(product);
@@ -124,7 +124,7 @@ async function loadOrders() {
         const itemList = o.items.map((i) => `${escapeHtml(i.name)} ×${i.quantity}`).join('<br>');
         return `
         <tr data-id="${o._id}">
-          <td>${o._id.slice(-6).toUpperCase()}</td>
+          <td>#${o._id}</td>
           <td>${customer}</td>
           <td>${itemList}</td>
           <td>${money(o.totalAmount)}</td>

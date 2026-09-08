@@ -60,7 +60,7 @@ async function loadProducts() {
 grid.addEventListener('click', (e) => {
   const btn = e.target.closest('.add-btn');
   if (!btn) return;
-  const product = (grid._products || []).find((p) => p._id === btn.dataset.id);
+  const product = (grid._products || []).find((p) => String(p._id) === btn.dataset.id);
   if (product) {
     Cart.add(product, 1);
     toast(`Added "${product.name}" to cart`, 'ok');

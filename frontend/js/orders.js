@@ -9,12 +9,12 @@ if (!Auth.requireLogin()) {
 }
 
 function orderCard(o) {
-  const highlight = placedId && o._id === placedId;
+  const highlight = placedId && String(o._id) === placedId;
   return `
     <div class="panel${highlight ? '' : ''}" style="${highlight ? 'border-color:var(--ok)' : ''}">
       <div class="row-between">
         <div>
-          <strong>Order ${o._id.slice(-6).toUpperCase()}</strong>
+          <strong>Order #${o._id}</strong>
           <span class="muted"> · ${new Date(o.createdAt).toLocaleString()}</span>
         </div>
         <div>

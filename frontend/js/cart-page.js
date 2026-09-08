@@ -43,7 +43,7 @@ list.addEventListener('click', (e) => {
   const row = e.target.closest('.cart-row');
   if (!row) return;
   const id = row.dataset.id;
-  const current = Cart.items().find((i) => i.id === id);
+  const current = Cart.items().find((i) => i.id === String(id));
   if (!current) return;
 
   if (e.target.classList.contains('inc')) Cart.setQuantity(id, current.quantity + 1);
