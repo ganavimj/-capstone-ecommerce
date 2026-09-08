@@ -1,12 +1,4 @@
 // Admin dashboard: product CRUD + order status management.
-if (!Auth.requireAdmin()) {
-  // redirected out
-} else {
-  initTabs();
-  loadProducts();
-  loadOrders();
-}
-
 const STATUSES = ['pending', 'shipped', 'delivered'];
 
 /* ---- tabs ---- */
@@ -166,3 +158,10 @@ orderTable.addEventListener('change', async (e) => {
     loadOrders();
   }
 });
+
+/* ---- bootstrap ---- */
+if (Auth.requireAdmin()) {
+  initTabs();
+  loadProducts();
+  loadOrders();
+}
