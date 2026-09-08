@@ -15,13 +15,14 @@ form.addEventListener('submit', async (e) => {
   submitBtn.disabled = true;
 
   try {
+    const field = (n) => form.elements.namedItem(n);
     const payload = {
-      email: form.email.value.trim(),
-      password: form.password.value,
+      email: field('email').value.trim(),
+      password: field('password').value,
     };
     let res;
     if (isRegister) {
-      payload.name = form.name.value.trim();
+      payload.name = field('name').value.trim();
       res = await Api.register(payload);
     } else {
       res = await Api.login(payload);

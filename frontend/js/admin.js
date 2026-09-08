@@ -55,14 +55,17 @@ async function loadProducts() {
   }
 }
 
+// Access a control by name (form.name is shadowed by HTMLFormElement.name).
+const pf = (name) => productForm.elements.namedItem(name);
+
 function fillForm(p) {
-  productForm.productId.value = p?._id || '';
-  productForm.name.value = p?.name || '';
-  productForm.category.value = p?.category || '';
-  productForm.price.value = p?.price ?? '';
-  productForm.stock.value = p?.stock ?? '';
-  productForm.imageUrl.value = p?.imageUrl || '';
-  productForm.description.value = p?.description || '';
+  pf('productId').value = p?._id || '';
+  pf('name').value = p?.name || '';
+  pf('category').value = p?.category || '';
+  pf('price').value = p?.price ?? '';
+  pf('stock').value = p?.stock ?? '';
+  pf('imageUrl').value = p?.imageUrl || '';
+  pf('description').value = p?.description || '';
   formTitle.textContent = p ? `Edit: ${p.name}` : 'New product';
   resetBtn.hidden = !p;
 }
@@ -91,14 +94,14 @@ productTable.addEventListener('click', async (e) => {
 productForm.addEventListener('submit', async (e) => {
   e.preventDefault();
   const payload = {
-    name: productForm.name.value.trim(),
-    category: productForm.category.value.trim(),
-    price: Number(productForm.price.value),
-    stock: Number(productForm.stock.value),
-    imageUrl: productForm.imageUrl.value.trim(),
-    description: productForm.description.value.trim(),
+    name: pf('name').value.trim(),
+    category: pf('category').value.trim(),
+    price: Number(pf('price').value),
+    stock: Number(pf('stock').value),
+    imageUrl: pf('imageUrl').value.trim(),
+    description: pf('description').value.trim(),
   };
-  const id = productForm.productId.value;
+  const id = pf('productId').value;
   try {
     if (id) {
       await Api.updateProduct(id, payload);
