@@ -5,6 +5,8 @@ All request/response bodies are JSON. Authenticated routes require
 `Authorization: Bearer <token>`. Errors: `{ "error": "message" }`.
 
 > Filled in with real examples during Phase 9. Endpoint list below is the MVP contract.
+> Ids are integers (PostgreSQL PKs); every object carries both `id` and `_id` (same value).
+> Bodies are camelCase (`imageUrl`, `totalAmount`, `priceAtPurchase`, …).
 
 ## Auth
 

@@ -4,24 +4,28 @@
 
 ## Status (2026-09-08)
 
+> **DB change:** switched from MongoDB/Mongoose to **PostgreSQL** (raw SQL via
+> `node-postgres`). Data layer, seed, and tests rewritten accordingly.
+
 | Phase | State |
 |---|---|
 | 0 · Repo setup | ✅ done |
-| 1 · Backend foundation | ✅ done |
-| 2 · Models + Product CRUD | ✅ done |
+| 1 · Backend foundation (Express + PG pool) | ✅ done |
+| 2 · Schema + Product CRUD | ✅ done |
 | 3 · Auth + authorization | ✅ done |
-| 4 · Orders API | ✅ done |
+| 4 · Orders API (transactional checkout) | ✅ done |
 | 5 · Frontend: shell + products | ✅ done |
 | 6 · Frontend: auth + cart + checkout + orders | ✅ done |
 | 7 · Frontend: admin dashboard | ✅ done |
-| 8 · Deploy (Atlas + Render + Vercel) | ⬜ pending — needs your accounts |
-| 9 · Test & document + demo video | 🟡 automated tests done; api-spec/README done; demo video pending |
+| 8 · Deploy (managed Postgres + Render + Vercel) | ⬜ pending — needs your accounts |
+| 9 · Test & document + demo video | 🟡 automated tests + docs done; demo video pending |
 
-**Verified working locally** via `backend/npm run smoke` (13 API checks) and two jsdom
-end-to-end suites (17 UI checks): browse, search/filter, register, cart persistence,
-checkout, order history, admin product CRUD, admin order-status updates, role gating.
+**Verified working locally** via `backend/npm run smoke` (21 API checks against a
+throwaway database) and two jsdom end-to-end suites (17 UI checks): browse,
+search/filter, register, cart persistence, checkout, order history, admin product
+CRUD, admin order-status updates, role gating, price-snapshot survival on product delete.
 
-Run it now: `cd backend && npm run dev:mem`, then `cd frontend && npx serve .`
+Run it now: `cd backend && npm run seed && npm run dev`, then `cd frontend && npx serve .`
 → open http://localhost:3000 · admin `admin@demo.com` / `Admin123!`
 
 **Audience for demo:** Capstone reviewers / internship evaluators. They check: frontend UI, backend API, auth, role-based authorization, database integration, cloud deployment, and clean commit history.
@@ -59,32 +63,33 @@ Run it now: `cd backend && npm run dev:mem`, then `cd frontend && npx serve .`
 
 | Decision | Choice | Reason |
 |---|---|---|
+| Database | **PostgreSQL**, raw SQL via `node-postgres` (no ORM) | Transparent SQL for the capstone rubric; `src/db/schema.sql` is the source of truth. |
+| Order line items | Separate `order_items` table (FK to orders + products) | Real relational modelling; `product_id` is `ON DELETE SET NULL` so order history survives. |
 | Cart persistence | **Client-side only** (`localStorage`), sent to server at checkout | Simplest; no `/api/cart` endpoints needed for MVP. Server validates prices & stock at order time. |
 | Auth token storage | `localStorage` under key `token` | Vanilla JS, no cookie/CSRF handling needed for demo. |
 | Admin creation | Seeded via `npm run seed` (email/password from env) | No "promote to admin" UI needed. |
 | Product images | External URL string | Avoids file storage/CDN setup. |
 | API base URL | `frontend/js/config.js` (`window.API_BASE`) | One place to switch local ↔ deployed. |
-| Order price integrity | Server recomputes `priceAtPurchase` and `totalAmount` from DB | Never trust client-sent prices. |
+| Order price integrity | `Order.checkout()` recomputes `price_at_purchase` and `total_amount` from DB inside a `SELECT … FOR UPDATE` transaction | Never trust client-sent prices; no stock oversell. |
+| Id shape | Integer PKs; API also exposes `id` as `_id` | Frontend treats ids uniformly without a rewrite. |
 
 The `/api/cart` endpoints from PROJECT_CONTEXT are **deferred** (not built for MVP).
 
 ---
 
-## 3. Final Data Model
+## 3. Final Data Model (PostgreSQL — see `backend/src/db/schema.sql`)
 
-**User:** `_id, name, email (unique, lowercased), passwordHash, role ('customer' | 'admin'), createdAt`
+**users:** `id PK, name, email UNIQUE (lowercased), password_hash, role ('customer' | 'admin'), created_at`
 
-**Product:** `_id, name, description, price (Number, >=0), category (String), stock (Number, >=0), imageUrl (String), createdAt`
+**products:** `id PK, name, description, price NUMERIC(10,2) >= 0, category, stock INT >= 0, image_url, created_at, updated_at`
 
-**Order:**
-```
-_id, userId (ref User),
-items: [{ productId (ref Product), name, quantity, priceAtPurchase }],
-totalAmount (Number),
-paymentStatus ('paid'),            // simulated
-status ('pending' | 'shipped' | 'delivered'),
-createdAt
-```
+**orders:** `id PK, user_id FK→users, total_amount NUMERIC(10,2), payment_status ('paid', simulated), status ('pending'|'shipped'|'delivered'), created_at`
+
+**order_items:** `id PK, order_id FK→orders (ON DELETE CASCADE), product_id FK→products (ON DELETE SET NULL), name, quantity INT > 0, price_at_purchase NUMERIC(10,2)`
+
+API responses are camelCased (`imageUrl`, `totalAmount`, `priceAtPurchase`, …) and
+include both `id` and `_id`. An order's `items` are nested in the response; admin
+order listings nest `userId` as `{ id, name, email }`.
 
 ---
 
@@ -132,12 +137,14 @@ INTERNSHIP/
 │   └── src/
 │       ├── server.js
 │       ├── app.js
-│       ├── config/db.js
-│       ├── models/{User,Product,Order}.js
+│       ├── config/db.js                 (pg Pool + query/withTransaction)
+│       ├── db/schema.sql                 (table definitions — source of truth)
+│       ├── models/{User,Product,Order}.js  (SQL query modules)
 │       ├── middleware/{auth.js,error.js}
 │       ├── controllers/{authController,productController,orderController}.js
 │       ├── routes/{auth,products,orders}.js
-│       └── seed/seed.js
+│       ├── utils/{asyncHandler,HttpError}.js
+│       └── seed/{seed.js,smoke.js,sample-products.js}
 └── frontend/
     ├── index.html
     ├── products.html
@@ -170,26 +177,27 @@ Each phase = one or more focused commits. Test locally before moving on.
 - **Commit:** `chore: project scaffold and docs`
 
 ### Phase 1 — Backend foundation
-- `backend/package.json` (express, mongoose, jsonwebtoken, bcryptjs, cors, dotenv, morgan; dev: nodemon).
-- `app.js` + `server.js`, `config/db.js`, health route `GET /api/health`.
-- CORS enabled, JSON body parsing, central error middleware.
-- **Commit:** `feat(backend): express server + mongodb connection`
+- `backend/package.json` (express, pg, jsonwebtoken, bcryptjs, cors, dotenv, morgan; dev: nodemon, supertest).
+- `app.js` + `server.js`, `config/db.js` (pg Pool + `withTransaction`), health route `GET /api/health`.
+- CORS enabled, JSON body parsing, central error middleware (maps PG error codes).
+- **Commit:** `feat(backend): express server + postgres pool`
 
-### Phase 2 — Models + Product CRUD
-- `User`, `Product`, `Order` schemas.
-- Product controller/routes: list (search/filter), get, create, update, delete, categories.
-- **Commit:** `feat(products): product model and CRUD API`
+### Phase 2 — Schema + Product CRUD
+- `db/schema.sql`: `users`, `products`, `orders`, `order_items`.
+- `models/{User,Product}.js` SQL modules; product controller/routes: list (search/filter), get, create, update, delete, categories.
+- **Commit:** `feat(products): schema + product CRUD API`
 
 ### Phase 3 — Auth + authorization
 - `authController` register/login/me, bcrypt hashing, JWT sign.
 - `middleware/auth.js`: `requireAuth`, `requireAdmin`.
 - Protect product write routes with `requireAdmin`.
-- `seed/seed.js`: wipe + insert admin user + ~8 sample products across 3 categories.
+- `seed/seed.js`: apply schema + insert admin user + ~8 sample products across 3 categories.
 - **Commit:** `feat(auth): jwt register/login + role-based route protection`
 
 ### Phase 4 — Orders API
-- `orderController`: create (validate stock, recompute totals, decrement stock), list own, get one, list all (admin), update status (admin).
-- **Commit:** `feat(orders): checkout + order management API`
+- `models/Order.js` `checkout()`: transactional — `SELECT … FOR UPDATE`, validate stock, snapshot price, insert order + items, decrement stock.
+- `orderController`: create, list own, get one, list all (admin), update status (admin).
+- **Commit:** `feat(orders): transactional checkout + order management API`
 
 ### Phase 5 — Frontend: shell + products
 - Shared `styles.css`, nav header partial pattern, `config.js`, `api.js` (fetch wrapper, injects bearer token, handles 401).
@@ -208,8 +216,8 @@ Each phase = one or more focused commits. Test locally before moving on.
 - **Commit:** `feat(admin): product and order management dashboard`
 
 ### Phase 8 — Deploy
-- MongoDB Atlas free cluster + DB user + network access.
-- Backend → Render (env vars: `MONGO_URI`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CLIENT_ORIGIN`). Run seed once.
+- Managed Postgres (Render PostgreSQL / Supabase / Neon). Grab its connection string.
+- Backend → Render (env: `DATABASE_URL`, `PGSSL=true`, `JWT_SECRET`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`, `CLIENT_ORIGIN`). Run `npm run seed` once against the prod DB.
 - Frontend → Vercel/Netlify static. Set `window.API_BASE` to Render URL.
 - Tighten CORS to the deployed frontend origin.
 - **Commit:** `chore(deploy): production config for render + vercel`
@@ -228,7 +236,14 @@ Each phase = one or more focused commits. Test locally before moving on.
 ```
 # backend/.env
 PORT=5000
-MONGO_URI=mongodb://127.0.0.1:27017/capstone_ecommerce
+
+# Local: discrete vars.  Hosted: set DATABASE_URL + PGSSL=true instead.
+PGHOST=localhost
+PGPORT=5432
+PGUSER=postgres
+PGPASSWORD=admin
+PGDATABASE=Capstone
+
 JWT_SECRET=change_me_to_a_long_random_string
 JWT_EXPIRES_IN=7d
 ADMIN_NAME=Site Admin
@@ -242,13 +257,14 @@ CLIENT_ORIGIN=*
 ## 8. Local Run
 
 ```
-# backend
+# backend  (needs a running PostgreSQL + a created database)
 cd backend && npm install
-npm run seed          # creates admin + sample products
+cp ../.env.example .env       # set PGUSER / PGPASSWORD / PGDATABASE
+npm run seed          # applies schema.sql (drops tables), inserts admin + sample products
 npm run dev           # http://localhost:5000
 
 # frontend  (static — any static server)
-cd frontend && npx serve .    # or open index.html via Live Server
+cd frontend && npx serve .    # http://localhost:3000  (serve.json disables clean URLs)
 ```
 
 Demo credentials: `admin@demo.com` / `Admin123!` (admin); register any account for customer.
@@ -274,5 +290,6 @@ Demo credentials: `admin@demo.com` / `Admin123!` (admin); register any account f
 |---|---|
 | Render free tier cold start (~50s) | Warm it before demo; mention in script. |
 | CORS misconfig on deploy | Test with deployed frontend early; keep `CLIENT_ORIGIN` env-driven. |
-| Atlas IP allowlist blocks Render | Allow `0.0.0.0/0` for demo (note as demo-only). |
+| Hosted Postgres requires SSL | Set `PGSSL=true` (config/db.js passes `ssl` when using `DATABASE_URL`). |
+| `npm run seed` drops tables | Expected — it's a reset. Don't run it against a DB with real data. |
 | Stock race on checkout | Acceptable for single-user demo; server still validates. |
