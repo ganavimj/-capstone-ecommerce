@@ -2,6 +2,28 @@
 
 **Goal:** Ship a working, demoable full-stack e-commerce app in reviewable increments, then record a 5-minute demo.
 
+## Status (2026-09-08)
+
+| Phase | State |
+|---|---|
+| 0 · Repo setup | ✅ done |
+| 1 · Backend foundation | ✅ done |
+| 2 · Models + Product CRUD | ✅ done |
+| 3 · Auth + authorization | ✅ done |
+| 4 · Orders API | ✅ done |
+| 5 · Frontend: shell + products | ✅ done |
+| 6 · Frontend: auth + cart + checkout + orders | ✅ done |
+| 7 · Frontend: admin dashboard | ✅ done |
+| 8 · Deploy (Atlas + Render + Vercel) | ⬜ pending — needs your accounts |
+| 9 · Test & document + demo video | 🟡 automated tests done; api-spec/README done; demo video pending |
+
+**Verified working locally** via `backend/npm run smoke` (13 API checks) and two jsdom
+end-to-end suites (17 UI checks): browse, search/filter, register, cart persistence,
+checkout, order history, admin product CRUD, admin order-status updates, role gating.
+
+Run it now: `cd backend && npm run dev:mem`, then `cd frontend && npx serve .`
+→ open http://localhost:3000 · admin `admin@demo.com` / `Admin123!`
+
 **Audience for demo:** Capstone reviewers / internship evaluators. They check: frontend UI, backend API, auth, role-based authorization, database integration, cloud deployment, and clean commit history.
 
 ---
